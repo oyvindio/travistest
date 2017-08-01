@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+K8S_VERSION="v1.6.4"
+
+# install kvm
+sudo apt -y install libvirt-bin qemu-kvm
+sudo usermod -a -G libvirtd "$(whoami)"
+
+# install docker-machine-driver-kvm
+curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.10.0/docker-machine-driver-kvm-ubuntu14.04 > /usr/local/bin/docker-machine-driver-kvm
+chmod +x /usr/local/bin/docker-machine-driver-kvm
+
+# install minikube
+curl -L https://github.com/kubernetes/minikube/releases/download/v0.21.0/minikube-linux-amd64 > /usr/local/bin/minikube
+curl -LO https://github.com/kubernetes/minikube/releases/download/v0.21.0/minikube-linux-amd64.sha256
+echo "$(cat minikube-linux-amd64.sha256)  /usr/local/bin/minikube" | shasum -a 256 --check -
+chmod +x /usr/local/bin/minikube
+
+install_kubectl() {
+	echo "Installing kubectl"
+	local url="https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl"
+	local checksum_url="https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl.sha1"
+	local install_dir="$(pwd)/kubectl/bin"
+
+	mkdir -p "$install_dir"
+	curl -Lo "$install_dir/kubectl" "$url"
+
+	local checksum="$(curl -Lo - "$checksum_url")"
+	echo "$checksum  $install_dir/kubectl" | shasum --algorithm 1 --check
+
+	chmod +x "$install_dir/kubectl"
+
+	mkdir ~/bin
+	install "$install_dir/kubectl" ~/bin/kubectl
+}
+
+install_kubectl

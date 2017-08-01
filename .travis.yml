@@ -1,3 +1,5 @@
-script: true
-after_success:
-  - env | grep 'TRAVIS_'
+sudo: required
+services:
+- docker
+install: ./install
+script: ./build
