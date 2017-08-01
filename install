@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
+#
 K8S_VERSION="v1.6.4"
 
 # install kvm
